@@ -1,6 +1,6 @@
 // Constantes de jeu
-const COULEURS = ['rouge', 'noire'];
-const SYMBOLES = { rouge: '♥', noire: '♠' };
+const COULEURS = ["rouge", "noire"];
+const SYMBOLES = { rouge: "♥", noire: "♠" };
 
 // État de la partie
 let mainJoueur = [];
@@ -11,21 +11,40 @@ let tempsRestant = 60;
 let intervalTimer = null;
 let jeuFini = false;
 
-// Éléments UI
-const elScore = document.getElementById('score');
-const elTour = document.getElementById('turn');
-const elTimer = document.getElementById('timer');
-const elCarteOrdi = document.getElementById('computer-card-display');
-const elMainJoueur = document.getElementById('player-hand');
-const elMessage = document.getElementById('game-message');
-const btnPasser = document.getElementById('btn-pass');
-const btnRejouer = document.getElementById('btn-replay');
+// Suivi du Drag & Drop
+let carteEnCoursDeDrag = null;
+let indexCarteDragguee = null;
 
-// Génère une carte aléatoire
-function tirerUneCarte() {
-  const valeur = Math.floor(Math.random() * 10) + 1;
-  const couleur = COULEURS[Math.floor(Math.random() * COULEURS.length)];
-  return { valeur, couleur };
+// Éléments UI
+const elScore = document.getElementById("score");
+const elTour = document.getElementById("turn");
+const elTimer = document.getElementById("timer");
+const elCarteOrdi = document.getElementById("computer-card-display");
+const elMainJoueur = document.getElementById("player-hand");
+const elDropZone = document.getElementById("drop-zone");
+const elMessage = document.getElementById("game-message");
+const btnPasser = document.getElementById("btn-pass");
+const btnRejouer = document.getElementById("btn-replay");
+
+// Génère un jeu complet de 20 cartes uniques (1-10 en rouge et en noire)
+function genererPaquetComplet() {
+  const paquet = [];
+  for (const couleur of COULEURS) {
+    for (let valeur = 1; valeur <= 10; valeur++) {
+      paquet.push({ valeur, couleur });
+    }
+  }
+  return paquet;
+}
+
+// Mélange un tableau de cartes
+function melanger(tableau) {
+  const copie = [...tableau];
+  for (let i = copie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copie[i], copie[j]] = [copie[j], copie[i]];
+  }
+  return copie;
 }
 
 // Initialisation
@@ -37,18 +56,26 @@ function nouvellePartie() {
 
   if (intervalTimer) clearInterval(intervalTimer);
 
-  // Generer les tirages
-  mainJoueur = Array.from({ length: 5 }, tirerUneCarte);
-  deckOrdi = Array.from({ length: 10 }, tirerUneCarte);
+  // L'ordi prend 10 cartes uniques mélangées dans le paquet
+  const paquetMélangé = melanger(genererPaquetComplet());
+  deckOrdi = paquetMélangé.slice(0, 10);
 
-  btnPasser.classList.remove('hidden');
-  btnRejouer.classList.add('hidden');
-  elTimer.classList.remove('timer-low');
-  elMessage.textContent = '';
+  // Tirage aléatoire de 5 cartes pour le joueur
+  mainJoueur = Array.from({ length: 5 }, () => {
+    const val = Math.floor(Math.random() * 10) + 1;
+    const coul = COULEURS[Math.floor(Math.random() * COULEURS.length)];
+    return { valeur: val, couleur: coul };
+  });
+
+  btnPasser.classList.remove("hidden");
+  btnRejouer.classList.add("hidden");
+  elTimer.classList.remove("timer-low");
+  elMessage.textContent = "";
 
   majScoreUI();
   majTimerUI();
   demarrerChrono();
+  initialiserEventsDrop();
   afficherTour();
 }
 
@@ -58,7 +85,7 @@ function demarrerChrono() {
     majTimerUI();
 
     if (tempsRestant <= 10) {
-      elTimer.classList.add('timer-low');
+      elTimer.classList.add("timer-low");
     }
 
     if (tempsRestant <= 0) {
@@ -84,18 +111,18 @@ function afficherTour() {
   }
 
   elTour.textContent = tourIndex + 1;
-  elMessage.textContent = '';
+  elMessage.textContent = "";
 
-  // Carte ordi
+  // Affichage carte ordinateur
   const carteActuelle = deckOrdi[tourIndex];
-  elCarteOrdi.innerHTML = creerelementCarte(carteActuelle);
+  elCarteOrdi.innerHTML = creerelementCarteHTML(carteActuelle);
 
-  // Cartes joueur
+  // Affichage main joueur
   afficherMainJoueur();
 }
 
-// Fabrique le HTML d'une carte
-function creerelementCarte(carte) {
+// Fabrique le rendu HTML d'une carte
+function creerelementCarteHTML(carte) {
   const symbole = SYMBOLES[carte.couleur];
   return `
     <div class="card ${carte.couleur}">
@@ -105,42 +132,83 @@ function creerelementCarte(carte) {
   `;
 }
 
+// Affiche la main du joueur avec les écouteurs Drag
 function afficherMainJoueur() {
-  elMainJoueur.innerHTML = '';
+  elMainJoueur.innerHTML = "";
 
-  mainJoueur.forEach((carte, idx) => {
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = creerelementCarte(carte);
-    const divCarte = wrapper.firstElementChild;
+  mainJoueur.forEach((carte, index) => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = creerelementCarteHTML(carte);
+    const divCarte = tempDiv.firstElementChild;
 
-    divCarte.addEventListener('click', () => jouerCarte(carte, idx, divCarte));
+    // Configuration Drag
+    divCarte.setAttribute("draggable", "true");
+
+    divCarte.addEventListener("dragstart", (e) => {
+      carteEnCoursDeDrag = carte;
+      indexCarteDragguee = index;
+      e.target.classList.add("active");
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    divCarte.addEventListener("dragend", (e) => {
+      e.target.classList.remove("active");
+    });
+
     elMainJoueur.appendChild(divCarte);
   });
 }
 
-function jouerCarte(carteJoueur, index, elementHtml) {
-  if (jeuFini) return;
+// Initialise la zone de dépôt (Drop Zone)
+function initialiserEventsDrop() {
+  elDropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    elDropZone.classList.add("active");
+  });
 
+  elDropZone.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    elDropZone.classList.remove("active");
+  });
+
+  elDropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    elDropZone.classList.remove("active");
+
+    if (!carteEnCoursDeDrag || jeuFini) return;
+
+    traiterTentative(carteEnCoursDeDrag, indexCarteDragguee);
+
+    // Réinitialisation après dépôt
+    carteEnCoursDeDrag = null;
+    indexCarteDragguee = null;
+  });
+}
+
+// Vérifie les règles au moment du drop
+function traiterTentative(carteJoueur, index) {
   const carteOrdi = deckOrdi[tourIndex];
 
-  // Cas 1 : Même valeur ET même couleur => Gagné
-  if (carteJoueur.valeur === carteOrdi.valeur && carteJoueur.couleur === carteOrdi.couleur) {
+  // Regle 1 : Valide (Même valeur + Même couleur)
+  if (
+    carteJoueur.valeur === carteOrdi.valeur &&
+    carteJoueur.couleur === carteOrdi.couleur
+  ) {
     score++;
     mainJoueur.splice(index, 1);
     majScoreUI();
     tourSuivant();
   }
-  // Cas 2 : Même valeur mais couleur OPPOSÉE => Règle V4 (Vous devez passer)
-  else if (carteJoueur.valeur === carteOrdi.valeur && carteJoueur.couleur !== carteOrdi.couleur) {
-    elementHtml.classList.add('wrong');
-    elMessage.textContent = `Vous avez la même valeur en ${carteJoueur.couleur} : vous devez passer !`;
-    setTimeout(() => elementHtml.classList.remove('wrong'), 400);
+  // Regle 2 : Même valeur mais couleur opposée => vous devez passer
+  else if (
+    carteJoueur.valeur === carteOrdi.valeur &&
+    carteJoueur.couleur !== carteOrdi.couleur
+  ) {
+    elMessage.textContent = `Vous avez le ${carteJoueur.valeur} en ${carteJoueur.couleur} : vous devez passer votre tour !`;
   }
-  // Cas 3 : Carte complètement différente
+  // Regle 3 : Carte incompatible
   else {
-    elementHtml.classList.add('wrong');
-    elMessage.textContent = "Carte incompatible.";
-    setTimeout(() => elementHtml.classList.remove('wrong'), 400);
+    elMessage.textContent = "Cette carte ne correspond pas du tout !";
   }
 }
 
@@ -153,15 +221,15 @@ function terminerPartie(message) {
   jeuFini = true;
   clearInterval(intervalTimer);
 
-  elCarteOrdi.innerHTML = `<div class="card" style="font-size:0.9rem; padding:10px; width:90px;">${message}</div>`;
-  elMessage.textContent = `Partie terminée. Score final : ${score} pt(s)`;
-  btnPasser.classList.add('hidden');
-  btnRejouer.classList.remove('hidden');
+  elCarteOrdi.innerHTML = `<div class="card" style="font-size:0.85rem; padding:8px; width:85px;">${message}</div>`;
+  elMessage.textContent = `Partie terminée ! Score : ${score} pt(s)`;
+  btnPasser.classList.add("hidden");
+  btnRejouer.classList.remove("hidden");
 }
 
-// Événements
-btnPasser.addEventListener('click', tourSuivant);
-btnRejouer.addEventListener('click', nouvellePartie);
+// Événements boutons
+btnPasser.addEventListener("click", tourSuivant);
+btnRejouer.addEventListener("click", nouvellePartie);
 
 // Lancement au chargement
 nouvellePartie();

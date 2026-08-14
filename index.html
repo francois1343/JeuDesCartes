@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jeu de Cartes - V4</title>
+    <title>Jeu de Cartes - V5</title>
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
   </head>
   <body>
     <div class="game-container">
-      <h1>Jeu de Cartes — V4</h1>
+      <h1>Jeu de Cartes — V5</h1>
 
       <div class="header-stats">
         <div>Score : <strong id="score">0</strong> pt(s)</div>
@@ -17,26 +17,33 @@
         <div>Temps : <strong id="timer">60</strong>s</div>
       </div>
 
-      <!-- Zone Ordinateur -->
-      <div class="card-zone">
-        <h3>Carte tirée par l'ordinateur :</h3>
-        <div id="computer-card-display" class="computer-card">
-          <div class="card">?</div>
+      <!-- Zone centrale de jeu -->
+      <div class="play-table">
+        <div class="card-zone">
+          <h3>Carte ordinateur</h3>
+          <div id="computer-card-display" class="computer-card">
+            <div class="card">?</div>
+          </div>
+        </div>
+
+        <!-- Zone de Drop -->
+        <div id="drop-zone" class="drop-zone">
+          <p class="drop-label">Glissez votre carte ici</p>
         </div>
       </div>
 
-      <!-- Message d'information / règle -->
+      <!-- Messages / Renseignements -->
       <div id="game-message" class="message-box"></div>
 
       <hr class="divider" />
 
-      <!-- Zone Joueur -->
+      <!-- Main du joueur -->
       <div class="card-zone">
-        <h3>Vos cartes :</h3>
+        <h3>Vos cartes (à faire glisser) :</h3>
         <div id="player-hand" class="player-cards"></div>
       </div>
 
-      <!-- Actions -->
+      <!-- Boutons d'action -->
       <div class="actions">
         <button id="btn-pass">Passer</button>
         <button id="btn-replay" class="hidden">Rejouer</button>
