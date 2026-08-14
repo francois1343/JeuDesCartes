@@ -1,36 +1,39 @@
 * {
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2c3e50;
+  color: #ecf0f1;
+  font-family: "Segoe UI", Tahoma, sans-serif;
 }
 
 .game-container {
-  background-color: #34495e;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  text-align: center;
   width: 90%;
   max-width: 600px;
+  padding: 30px;
+  background: #34495e;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .header-stats {
   display: flex;
   justify-content: space-between;
-  font-size: 1.2rem;
+  gap: 10px;
   margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 2px solid #7f8c8d;
+}
+
+.header-stats p {
+  margin: 0;
 }
 
 .card-zone {
@@ -38,22 +41,20 @@ body {
 }
 
 .card {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 80px;
   height: 120px;
-  background-color: #fff;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+  background: white;
   color: #2c3e50;
+  border-radius: 10px;
   font-size: 2rem;
   font-weight: bold;
-  border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  margin: 5px;
   user-select: none;
-  transition:
-    transform 0.2s,
-    background-color 0.2s;
+  transition: 0.2s;
 }
 
 .player-cards .card {
@@ -62,22 +63,22 @@ body {
 
 .player-cards .card:hover {
   transform: translateY(-8px);
-  background-color: #e8f4f8;
+  background: #e8f4f8;
 }
 
-.player-cards .card.wrong {
-  animation: shake 0.3s;
-  background-color: #e74c3c;
+.player-cards .wrong {
+  background: #e74c3c;
   color: white;
+  animation: shake 0.3s;
 }
 
 .computer-card .card {
+  background: #fef9e7;
   border: 3px solid #f1c40f;
-  background-color: #fef9e7;
 }
 
-.divider {
-  border: 0;
+hr {
+  border: none;
   border-top: 2px solid #7f8c8d;
   margin: 20px 0;
 }
@@ -87,29 +88,32 @@ body {
 }
 
 button {
-  background-color: #e67e22;
-  color: white;
-  border: none;
   padding: 12px 25px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  border: none;
   border-radius: 8px;
+  background: #e67e22;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    transform 0.1s;
+  transition: 0.2s;
 }
-
 button:hover {
-  background-color: #d35400;
+  background: #d35400;
 }
-
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
-
 .hidden {
-  display: none !important;
+  display: none;
+}
+.end-message {
+  width: 120px;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+.timer-low {
+  color: #e74c3c;
 }
 
 @keyframes shake {

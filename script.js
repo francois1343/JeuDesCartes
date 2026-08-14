@@ -1,121 +1,159 @@
-// État du jeu
 let playerHand = [];
 let computerDeck = [];
-let currentTurnIndex = 0;
+
+let currentTurn = 0;
 let score = 0;
+let timeLeft = 60;
+let timer = null;
+let gameOver = false;
 
-// Éléments DOM
-const scoreEl = document.getElementById('score');
-const turnEl = document.getElementById('turn');
-const computerCardDisplay = document.getElementById('computer-card-display');
-const playerHandEl = document.getElementById('player-hand');
-const btnPass = document.getElementById('btn-pass');
-const btnReplay = document.getElementById('btn-replay');
+const scoreEl = document.getElementById("score");
+const turnEl = document.getElementById("turn");
+const timerEl = document.getElementById("timer");
 
-// Générer un entier aléatoire entre min et max (inclus)
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+const computerCard = document.getElementById("computer-card-display");
+const playerHandEl = document.getElementById("player-hand");
+
+const passBtn = document.getElementById("btn-pass");
+const replayBtn = document.getElementById("btn-replay");
+
+function randomCard() {
+  return Math.floor(Math.random() * 10) + 1;
 }
 
-// Initialisation d'une partie
 function initGame() {
   score = 0;
-  currentTurnIndex = 0;
+  currentTurn = 0;
+  timeLeft = 60;
+  gameOver = false;
 
-  // 1. Tirer 5 cartes aléatoires (1 à 10) pour le joueur et les trier par ordre croissant
+  clearInterval(timer);
+
   playerHand = [];
+
   for (let i = 0; i < 5; i++) {
-    playerHand.push(getRandomInt(1, 10));
+    playerHand.push(randomCard());
   }
+
   playerHand.sort((a, b) => a - b);
 
-  // 2. Préparer les 10 tirages de l'ordinateur (1 à 10 aléatoires)
   computerDeck = [];
+
   for (let i = 0; i < 10; i++) {
-    computerDeck.push(getRandomInt(1, 10));
+    computerDeck.push(randomCard());
   }
 
-  // 3. Réinitialiser l'interface
-  btnPass.classList.remove('hidden');
-  btnReplay.classList.add('hidden');
-  updateScoreUI();
+  passBtn.classList.remove("hidden");
+  replayBtn.classList.add("hidden");
+  timerEl.classList.remove("timer-low");
 
-  // Démarrer le premier tour
-  renderTurn();
+  updateScore();
+  updateTimer();
+
+  startTimer();
+  showTurn();
 }
 
-// Affichage d'un tour
-function renderTurn() {
-  if (currentTurnIndex >= 10) {
-    endGame();
+function startTimer() {
+  timer = setInterval(() => {
+    timeLeft--;
+
+    updateTimer();
+
+    if (timeLeft <= 10) {
+      timerEl.classList.add("timer-low");
+    }
+
+    if (timeLeft <= 0) {
+      endGame("Temps écoulé !");
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  timerEl.textContent = timeLeft;
+}
+
+function showTurn() {
+  if (gameOver) return;
+
+  if (currentTurn >= 10) {
+    endGame("Partie terminée !");
     return;
   }
 
-  turnEl.textContent = currentTurnIndex + 1;
+  turnEl.textContent = currentTurn + 1;
 
-  // Carte tirée par l'ordinateur
-  const currentCard = computerDeck[currentTurnIndex];
-  computerCardDisplay.innerHTML = `<div class="card">${currentCard}</div>`;
+  const card = computerDeck[currentTurn];
 
-  // Main du joueur
-  renderPlayerHand();
+  computerCard.innerHTML = `
+    <div class="card">${card}</div>
+  `;
+
+  showPlayerCards();
 }
 
-// Rendu des cartes du joueur
-function renderPlayerHand() {
-  playerHandEl.innerHTML = '';
+function showPlayerCards() {
+  playerHandEl.innerHTML = "";
+
   playerHand.forEach((value, index) => {
-    const cardDiv = document.createElement('div');
-    cardDiv.className = 'card';
-    cardDiv.textContent = value;
-    cardDiv.addEventListener('click', () => handleCardClick(value, index, cardDiv));
-    playerHandEl.appendChild(cardDiv);
+    const card = document.createElement("div");
+
+    card.classList.add("card");
+    card.textContent = value;
+
+    card.addEventListener("click", () => {
+      playCard(value, index, card);
+    });
+
+    playerHandEl.appendChild(card);
   });
 }
 
-// Gestion du clic sur une carte du joueur
-function handleCardClick(value, index, element) {
-  const currentComputerCard = computerDeck[currentTurnIndex];
+function playCard(value, index, card) {
+  if (gameOver) return;
 
-  if (value === currentComputerCard) {
-    // Bonne carte : +1 point et la carte disparaît de la main
+  const computerValue = computerDeck[currentTurn];
+
+  if (value === computerValue) {
     score++;
+
     playerHand.splice(index, 1);
-    updateScoreUI();
+
+    updateScore();
     nextTurn();
   } else {
-    // Mauvaise carte : animation visuelle d'erreur
-    element.classList.add('wrong');
-    setTimeout(() => element.classList.remove('wrong'), 300);
+    card.classList.add("wrong");
+
+    setTimeout(() => {
+      card.classList.remove("wrong");
+    }, 300);
   }
 }
 
-// Passer son tour (0pt marqué)
-function handlePass() {
-  nextTurn();
-}
-
-// Passer au tour suivant
 function nextTurn() {
-  currentTurnIndex++;
-  renderTurn();
+  currentTurn++;
+  showTurn();
 }
 
-// Mise à jour du score
-function updateScoreUI() {
+function updateScore() {
   scoreEl.textContent = score;
 }
 
-// Fin de partie
-function endGame() {
-  computerCardDisplay.innerHTML = `<div class="card" style="font-size: 1rem; padding: 10px;">Fin !</div>`;
-  btnPass.classList.add('hidden');
-  btnReplay.classList.remove('hidden');
+function endGame(message) {
+  gameOver = true;
+
+  clearInterval(timer);
+
+  computerCard.innerHTML = `
+    <div class="card end-message">${message}</div>
+  `;
+
+  passBtn.classList.add("hidden");
+  replayBtn.classList.remove("hidden");
 }
 
-// Événements
-btnPass.addEventListener('click', handlePass);
-btnReplay.addEventListener('click', initGame);
+passBtn.addEventListener("click", nextTurn);
+replayBtn.addEventListener("click", initGame);
 
-// Lancement automatique au chargement
 initGame();
