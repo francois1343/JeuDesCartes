@@ -29,13 +29,12 @@ function initGame() {
 
   clearInterval(timer);
 
+  //l'ordre du tirage
   playerHand = [];
 
   for (let i = 0; i < 5; i++) {
     playerHand.push(randomCard());
   }
-
-  playerHand.sort((a, b) => a - b);
 
   computerDeck = [];
 
@@ -78,16 +77,16 @@ function showTurn() {
   if (gameOver) return;
 
   if (currentTurn >= 10) {
-    endGame("Partie terminée !");
+    endGame("Toutes les cartes ont été jouées !");
     return;
   }
 
   turnEl.textContent = currentTurn + 1;
 
-  const card = computerDeck[currentTurn];
+  const value = computerDeck[currentTurn];
 
   computerCard.innerHTML = `
-    <div class="card">${card}</div>
+    <div class="card">${value}</div>
   `;
 
   showPlayerCards();
@@ -117,7 +116,6 @@ function playCard(value, index, card) {
 
   if (value === computerValue) {
     score++;
-
     playerHand.splice(index, 1);
 
     updateScore();
