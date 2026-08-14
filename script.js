@@ -1,160 +1,167 @@
-let playerHand = [];
-let computerDeck = [];
+// Constantes de jeu
+const COULEURS = ['rouge', 'noire'];
+const SYMBOLES = { rouge: '♥', noire: '♠' };
 
-let currentTurn = 0;
+// État de la partie
+let mainJoueur = [];
+let deckOrdi = [];
+let tourIndex = 0;
 let score = 0;
-let timeLeft = 60;
-let timer = null;
-let gameOver = false;
+let tempsRestant = 60;
+let intervalTimer = null;
+let jeuFini = false;
 
-const scoreEl = document.getElementById("score");
-const turnEl = document.getElementById("turn");
-const timerEl = document.getElementById("timer");
+// Éléments UI
+const elScore = document.getElementById('score');
+const elTour = document.getElementById('turn');
+const elTimer = document.getElementById('timer');
+const elCarteOrdi = document.getElementById('computer-card-display');
+const elMainJoueur = document.getElementById('player-hand');
+const elMessage = document.getElementById('game-message');
+const btnPasser = document.getElementById('btn-pass');
+const btnRejouer = document.getElementById('btn-replay');
 
-const computerCard = document.getElementById("computer-card-display");
-const playerHandEl = document.getElementById("player-hand");
-
-const passBtn = document.getElementById("btn-pass");
-const replayBtn = document.getElementById("btn-replay");
-
-function randomCard() {
-  return Math.floor(Math.random() * 10) + 1;
+// Génère une carte aléatoire
+function tirerUneCarte() {
+  const valeur = Math.floor(Math.random() * 10) + 1;
+  const couleur = COULEURS[Math.floor(Math.random() * COULEURS.length)];
+  return { valeur, couleur };
 }
 
-function initGame() {
+// Initialisation
+function nouvellePartie() {
   score = 0;
-  currentTurn = 0;
-  timeLeft = 60;
-  gameOver = false;
+  tourIndex = 0;
+  tempsRestant = 60;
+  jeuFini = false;
 
-  clearInterval(timer);
+  if (intervalTimer) clearInterval(intervalTimer);
 
-  // Initialisation de la main du joueur (5 cartes)
-  playerHand = [];
-  for (let i = 0; i < 5; i++) {
-    playerHand.push(randomCard());
-  }
+  // Generer les tirages
+  mainJoueur = Array.from({ length: 5 }, tirerUneCarte);
+  deckOrdi = Array.from({ length: 10 }, tirerUneCarte);
 
-  // Initialisation du deck ordinateur (10 cartes)
-  computerDeck = [];
-  for (let i = 0; i < 10; i++) {
-    computerDeck.push(randomCard());
-  }
+  btnPasser.classList.remove('hidden');
+  btnRejouer.classList.add('hidden');
+  elTimer.classList.remove('timer-low');
+  elMessage.textContent = '';
 
-  passBtn.classList.remove("hidden");
-  replayBtn.classList.add("hidden");
-  timerEl.classList.remove("timer-low");
-
-  updateScore();
-  updateTimer();
-
-  startTimer();
-  showTurn();
+  majScoreUI();
+  majTimerUI();
+  demarrerChrono();
+  afficherTour();
 }
 
-function startTimer() {
-  timer = setInterval(() => {
-    timeLeft--;
+function demarrerChrono() {
+  intervalTimer = setInterval(() => {
+    tempsRestant--;
+    majTimerUI();
 
-    updateTimer();
-
-    if (timeLeft <= 10) {
-      timerEl.classList.add("timer-low");
+    if (tempsRestant <= 10) {
+      elTimer.classList.add('timer-low');
     }
 
-    if (timeLeft <= 0) {
-      endGame("Temps écoulé !");
+    if (tempsRestant <= 0) {
+      terminerPartie("Temps écoulé !");
     }
   }, 1000);
 }
 
-function updateTimer() {
-  timerEl.textContent = timeLeft;
+function majTimerUI() {
+  elTimer.textContent = tempsRestant;
 }
 
-function showTurn() {
-  if (gameOver) return;
+function majScoreUI() {
+  elScore.textContent = score;
+}
 
-  if (currentTurn >= 10) {
-    endGame("Toutes les cartes ont été jouées !");
+function afficherTour() {
+  if (jeuFini) return;
+
+  if (tourIndex >= 10) {
+    terminerPartie("Fin des 10 tirages !");
     return;
   }
 
-  turnEl.textContent = currentTurn + 1;
+  elTour.textContent = tourIndex + 1;
+  elMessage.textContent = '';
 
-  const value = computerDeck[currentTurn];
+  // Carte ordi
+  const carteActuelle = deckOrdi[tourIndex];
+  elCarteOrdi.innerHTML = creerelementCarte(carteActuelle);
 
-  computerCard.innerHTML = `
-    <div class="card">${value}</div>
-  `;
-
-  showPlayerCards();
+  // Cartes joueur
+  afficherMainJoueur();
 }
 
-function showPlayerCards() {
-  playerHandEl.innerHTML = "";
+// Fabrique le HTML d'une carte
+function creerelementCarte(carte) {
+  const symbole = SYMBOLES[carte.couleur];
+  return `
+    <div class="card ${carte.couleur}">
+      <span>${carte.valeur}</span>
+      <span class="symbol">${symbole}</span>
+    </div>
+  `;
+}
 
-  playerHand.forEach((value, index) => {
-    const card = document.createElement("div");
+function afficherMainJoueur() {
+  elMainJoueur.innerHTML = '';
 
-    card.classList.add("card");
-    card.textContent = value;
+  mainJoueur.forEach((carte, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = creerelementCarte(carte);
+    const divCarte = wrapper.firstElementChild;
 
-    card.addEventListener("click", () => {
-      playCard(value, index, card);
-    });
-
-    playerHandEl.appendChild(card);
+    divCarte.addEventListener('click', () => jouerCarte(carte, idx, divCarte));
+    elMainJoueur.appendChild(divCarte);
   });
 }
 
-function playCard(value, index, card) {
-  if (gameOver) return;
+function jouerCarte(carteJoueur, index, elementHtml) {
+  if (jeuFini) return;
 
-  const computerValue = computerDeck[currentTurn];
+  const carteOrdi = deckOrdi[tourIndex];
 
-  if (value === computerValue) {
+  // Cas 1 : Même valeur ET même couleur => Gagné
+  if (carteJoueur.valeur === carteOrdi.valeur && carteJoueur.couleur === carteOrdi.couleur) {
     score++;
-
-    // Remplace la carte jouée par une nouvelle carte tirée au hasard
-    playerHand[index] = randomCard();
-
-    updateScore();
-    nextTurn();
-  } else {
-    card.classList.add("wrong");
-
-    setTimeout(() => {
-      card.classList.remove("wrong");
-    }, 300);
+    mainJoueur.splice(index, 1);
+    majScoreUI();
+    tourSuivant();
+  }
+  // Cas 2 : Même valeur mais couleur OPPOSÉE => Règle V4 (Vous devez passer)
+  else if (carteJoueur.valeur === carteOrdi.valeur && carteJoueur.couleur !== carteOrdi.couleur) {
+    elementHtml.classList.add('wrong');
+    elMessage.textContent = `Vous avez la même valeur en ${carteJoueur.couleur} : vous devez passer !`;
+    setTimeout(() => elementHtml.classList.remove('wrong'), 400);
+  }
+  // Cas 3 : Carte complètement différente
+  else {
+    elementHtml.classList.add('wrong');
+    elMessage.textContent = "Carte incompatible.";
+    setTimeout(() => elementHtml.classList.remove('wrong'), 400);
   }
 }
 
-function nextTurn() {
-  if (gameOver) return;
-  currentTurn++;
-  showTurn();
+function tourSuivant() {
+  tourIndex++;
+  afficherTour();
 }
 
-function updateScore() {
-  scoreEl.textContent = score;
+function terminerPartie(message) {
+  jeuFini = true;
+  clearInterval(intervalTimer);
+
+  elCarteOrdi.innerHTML = `<div class="card" style="font-size:0.9rem; padding:10px; width:90px;">${message}</div>`;
+  elMessage.textContent = `Partie terminée. Score final : ${score} pt(s)`;
+  btnPasser.classList.add('hidden');
+  btnRejouer.classList.remove('hidden');
 }
 
-function endGame(message) {
-  gameOver = true;
+// Événements
+btnPasser.addEventListener('click', tourSuivant);
+btnRejouer.addEventListener('click', nouvellePartie);
 
-  clearInterval(timer);
-
-  computerCard.innerHTML = `
-    <div class="card end-message">${message}</div>
-  `;
-
-  passBtn.classList.add("hidden");
-  replayBtn.classList.remove("hidden");
-}
-
-passBtn.addEventListener("click", nextTurn);
-replayBtn.addEventListener("click", initGame);
-
-// Lancement automatique de la partie
-initGame();
+// Lancement au chargement
+nouvellePartie();

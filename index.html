@@ -3,46 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>Jeu de cartes</title>
-
+    <title>Jeu de Cartes - V4</title>
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
   </head>
-
   <body>
-    <main class="game-container">
-      <h1>Jeu de cartes</h1>
+    <div class="game-container">
+      <h1>Jeu de Cartes — V4</h1>
 
       <div class="header-stats">
-        <p>Score : <strong id="score">0</strong> pts</p>
-        <p>Tirage : <strong id="turn">0</strong> / 10</p>
-        <p>Temps : <strong id="timer">60</strong>s</p>
+        <div>Score : <strong id="score">0</strong> pt(s)</div>
+        <div>Tirage : <strong id="turn">0</strong> / 10</div>
+        <div>Temps : <strong id="timer">60</strong>s</div>
       </div>
 
-      <!-- Carte de l'ordinateur -->
-      <section class="card-zone">
-        <h2>Carte de l'ordinateur</h2>
-
+      <!-- Zone Ordinateur -->
+      <div class="card-zone">
+        <h3>Carte tirée par l'ordinateur :</h3>
         <div id="computer-card-display" class="computer-card">
           <div class="card">?</div>
         </div>
-      </section>
+      </div>
 
-      <hr />
+      <!-- Message d'information / règle -->
+      <div id="game-message" class="message-box"></div>
 
-      <!-- Main du joueur -->
-      <section class="card-zone">
-        <h2>Mes cartes</h2>
-        <p class="info">Les cartes sont mélangées.</p>
+      <hr class="divider" />
 
+      <!-- Zone Joueur -->
+      <div class="card-zone">
+        <h3>Vos cartes :</h3>
         <div id="player-hand" class="player-cards"></div>
-      </section>
+      </div>
 
+      <!-- Actions -->
       <div class="actions">
         <button id="btn-pass">Passer</button>
         <button id="btn-replay" class="hidden">Rejouer</button>
       </div>
-    </main>
+    </div>
   </body>
 </html>

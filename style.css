@@ -1,131 +1,135 @@
 * {
   box-sizing: border-box;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
+  background-color: #1e293b;
+  color: #f8fafc;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: #2c3e50;
-  color: #ecf0f1;
-  font-family: "Segoe UI", Tahoma, sans-serif;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
 }
 
 .game-container {
+  background-color: #334155;
+  padding: 25px;
+  border-radius: 12px;
   width: 90%;
-  max-width: 600px;
-  padding: 30px;
-  background: #34495e;
-  border-radius: 15px;
+  max-width: 580px;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 .header-stats {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 25px;
+  font-size: 1.1rem;
   padding-bottom: 15px;
-  border-bottom: 2px solid #7f8c8d;
-}
-
-.header-stats p {
-  margin: 0;
+  border-bottom: 1px solid #475569;
+  margin-bottom: 20px;
 }
 
 .timer-low {
-  color: #e74c3c;
-  animation: pulse 1s infinite;
+  color: #ef4444;
+  font-weight: bold;
 }
 
 .card-zone {
-  margin: 20px 0;
+  margin: 15px 0;
 }
 
+/* Style général des cartes */
 .card {
-  width: 80px;
-  height: 120px;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 5px;
-  background: white;
-  color: #2c3e50;
-  font-size: 2rem;
-  font-weight: bold;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 75px;
+  height: 110px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin: 6px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   user-select: none;
-  transition: 0.2s;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
 }
 
+/* Couleurs des cartes */
+.card.rouge {
+  color: #dc2626;
+  border: 2px solid #f87171;
+}
+
+.card.noire {
+  color: #0f172a;
+  border: 2px solid #64748b;
+}
+
+.card .symbol {
+  font-size: 1.2rem;
+  margin-top: -2px;
+}
+
+/* Cartes jouables */
 .player-cards .card {
   cursor: pointer;
 }
 
 .player-cards .card:hover {
-  transform: translateY(-8px);
-  background: #e8f4f8;
+  transform: translateY(-6px);
 }
 
-.player-cards .wrong {
-  background: #e74c3c;
-  color: white;
-  animation: shake 0.3s;
+/* Animations d'erreur */
+.card.wrong {
+  animation: shake 0.3s ease;
+  background-color: #fecdd3;
 }
 
-.computer-card .card {
-  background: #fef9e7;
-  border: 3px solid #f1c40f;
+.message-box {
+  min-height: 24px;
+  font-size: 0.95rem;
+  color: #fbbf24;
+  font-weight: 500;
+  margin: 10px 0;
 }
 
-hr {
-  margin: 20px 0;
-  border: none;
-  border-top: 2px solid #7f8c8d;
+.divider {
+  border: 0;
+  border-top: 1px solid #475569;
+  margin: 15px 0;
 }
 
 .actions {
-  margin-top: 25px;
+  margin-top: 20px;
 }
 
 button {
-  padding: 12px 25px;
-  background: #e67e22;
+  background-color: #3b82f6;
   color: white;
   border: none;
-  border-radius: 8px;
+  padding: 10px 22px;
   font-size: 1rem;
-  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: 600;
 }
 
 button:hover {
-  background: #d35400;
-}
-
-button:active {
-  transform: scale(0.97);
+  background-color: #2563eb;
 }
 
 .hidden {
-  display: none;
-}
-
-.info {
-  margin-top: -5px;
-  color: #bdc3c7;
-  font-size: 0.9rem;
-}
-
-.end-message {
-  width: 120px;
-  padding: 10px;
-  font-size: 0.9rem;
+  display: none !important;
 }
 
 @keyframes shake {
@@ -134,19 +138,9 @@ button:active {
     transform: translateX(0);
   }
   25% {
-    transform: translateX(-5px);
+    transform: translateX(-6px);
   }
   75% {
-    transform: translateX(5px);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
+    transform: translateX(6px);
   }
 }
