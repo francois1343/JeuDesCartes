@@ -29,15 +29,14 @@ function initGame() {
 
   clearInterval(timer);
 
-  //l'ordre du tirage
+  // Initialisation de la main du joueur (5 cartes)
   playerHand = [];
-
   for (let i = 0; i < 5; i++) {
     playerHand.push(randomCard());
   }
 
+  // Initialisation du deck ordinateur (10 cartes)
   computerDeck = [];
-
   for (let i = 0; i < 10; i++) {
     computerDeck.push(randomCard());
   }
@@ -116,7 +115,9 @@ function playCard(value, index, card) {
 
   if (value === computerValue) {
     score++;
-    playerHand.splice(index, 1);
+
+    // Remplace la carte jouée par une nouvelle carte tirée au hasard
+    playerHand[index] = randomCard();
 
     updateScore();
     nextTurn();
@@ -130,6 +131,7 @@ function playCard(value, index, card) {
 }
 
 function nextTurn() {
+  if (gameOver) return;
   currentTurn++;
   showTurn();
 }
@@ -154,4 +156,5 @@ function endGame(message) {
 passBtn.addEventListener("click", nextTurn);
 replayBtn.addEventListener("click", initGame);
 
+// Lancement automatique de la partie
 initGame();
